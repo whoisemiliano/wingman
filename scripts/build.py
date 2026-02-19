@@ -45,6 +45,7 @@ def build_executable():
         "--hidden-import", "wingman.commands",
         "--hidden-import", "wingman.commands.field_extractor",
         "--hidden-import", "wingman.commands.report_replacer",
+        "--hidden-import", "wingman.commands.pull_reports",
         "--hidden-import", "wingman.utils",
         "--hidden-import", "wingman.utils.salesforce_client",
         "--hidden-import", "click",

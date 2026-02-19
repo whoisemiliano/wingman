@@ -22,6 +22,7 @@ test-cli: ## Test CLI commands
 	wingman --help
 	wingman extract-fields --help
 	wingman replace-fields --help
+	wingman pull-reports --help
 	wingman test-connection --help
 
 clean: ## Clean up build artifacts

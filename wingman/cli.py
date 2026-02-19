@@ -12,6 +12,7 @@ try:
     from . import __version__
     from .commands.field_extractor import field_extractor
     from .commands.report_replacer import report_replacer
+    from .commands.pull_reports import pull_reports
     from .utils.salesforce_client import SalesforceClient
 except ImportError:
     # Handle relative imports when running as standalone
@@ -21,6 +22,7 @@ except ImportError:
     from wingman import __version__
     from wingman.commands.field_extractor import field_extractor
     from wingman.commands.report_replacer import report_replacer
+    from wingman.commands.pull_reports import pull_reports
     from wingman.utils.salesforce_client import SalesforceClient
 
 console = Console()
@@ -134,6 +136,32 @@ def replace_fields(ctx, org, old_field, new_field, batch_size, dry_run, reports_
         target_org = org or ctx.obj.get('org')  # Optional when using reports-path
     
     report_replacer(ctx, target_org, old_field, new_field, batch_size, dry_run, reports_path)
+
+
+@main.command()
+@click.option('--org', '-o', help='Salesforce org alias (overrides default)')
+@click.option('--name-contains', '-n', help='Only pull reports whose name or developer name contains this text (case-insensitive)')
+@click.option('--batch-size', '-b', type=int, default=100, help='Number of reports to retrieve per batch')
+@click.pass_context
+def pull_reports_cmd(ctx, org, name_contains, batch_size):
+    """
+    Pull (retrieve) report metadata from the org without modifying anything.
+
+    Reports are written to force-app/main/default/reports. Use --name-contains
+    to limit to reports whose name or developer name contains the given text
+    (e.g. "test" to get only test reports).
+
+    Examples:
+    \b
+    wingman pull-reports --org myorg
+    wingman pull-reports --org myorg --name-contains test
+    wingman pull-reports --org myorg -n "Sales" --batch-size 50
+    """
+    target_org = org or ctx.obj.get('org')
+    if not target_org:
+        console.print("[red]Error: No org specified. Use --org or set a default with --org option.[/red]")
+        raise click.Abort()
+    pull_reports(ctx, target_org, name_contains, batch_size)
 
 
 @main.command()

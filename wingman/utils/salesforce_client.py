@@ -86,11 +86,17 @@ class SalesforceClient:
             console.print(f"[red]Invalid JSON response: {e}[/red]")
             raise
     
-    def get_reports(self) -> List[Dict[str, Any]]:
-        """Get all reports from the org."""
-        soql_query = ("SELECT Id, Name, DeveloperName, FolderName, LastModifiedDate "
-                     "FROM Report WHERE IsDeleted = false ORDER BY Name")
-        
+    def get_reports(self, name_contains: Optional[str] = None) -> List[Dict[str, Any]]:
+        """Get all reports from the org, optionally filtered by name or developer name."""
+        base = ("SELECT Id, Name, DeveloperName, FolderName, LastModifiedDate "
+                "FROM Report WHERE IsDeleted = false")
+        if name_contains and name_contains.strip():
+            # Escape single quotes for SOQL: ' -> \'
+            safe = name_contains.strip().replace("\\", "\\\\").replace("'", "\\'")
+            pattern = f"%{safe}%"
+            soql_query = f"{base} AND (Name LIKE '{pattern}' OR DeveloperName LIKE '{pattern}') ORDER BY Name"
+        else:
+            soql_query = f"{base} ORDER BY Name"
         result = self.query(soql_query)
         return result.get('result', {}).get('records', [])
     
